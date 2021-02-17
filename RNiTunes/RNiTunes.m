@@ -460,6 +460,61 @@ RCT_EXPORT_METHOD(getTracks:(NSDictionary *)params successCallback:(RCTResponseS
     successCallback(@[mutableSongsToSerialize]);
 }
 
+RCT_EXPORT_METHOD(getAlbumsTracks:(NSDictionary *)params successCallback:(RCTResponseSenderBlock)successCallback) {
+
+    NSLog(@"%@ %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
+
+    MPMediaQuery *songsQuery;
+    songsQuery = [MPMediaQuery albumsQuery];
+    
+    [songsQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithInt:MPMediaTypeMusic] forProperty:MPMediaItemPropertyMediaType]];
+    
+    [songsQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
+
+    NSMutableArray *mutableSongsToSerialize = [NSMutableArray array];
+    NSArray  *albumsArray = [songsQuery collections];
+
+    for (MPMediaItemCollection *mediaItemCollection in albumsArray) {
+        
+        MPMediaItem *mediaItem    = [mediaItemCollection representativeItem];
+        NSString    *albumTitle   = [mediaItem valueForProperty:MPMediaItemPropertyAlbumTitle];
+        NSString    *albumArtist  = [mediaItem valueForProperty:MPMediaItemPropertyAlbumArtist];
+        NSString    *title = [mediaItem valueForProperty: MPMediaItemPropertyTitle]; // filterable
+        NSString    *duration = [mediaItem valueForProperty: MPMediaItemPropertyPlaybackDuration];
+        NSURL *url = [mediaItem valueForProperty: MPMediaItemPropertyAssetURL];
+        NSString *assetUrl = url.absoluteString;
+        
+        if (title == nil) {
+            title = @"";
+        }
+        if (albumTitle == nil) {
+            albumTitle = @"";
+        }
+        if (albumArtist == nil) {
+            albumArtist = @"";
+        }
+        if (duration == nil) {
+            duration = @"0";
+        }
+        if (assetUrl == nil) {
+            assetUrl = @"";
+        }
+        
+        NSDictionary *songDictionary = [NSMutableDictionary dictionary];
+        
+        songDictionary = @{
+            @"albumTitle": albumTitle,
+            @"albumArtist": albumArtist,
+            @"assetUrl": assetUrl,
+            @"duration": [duration isKindOfClass:[NSString class]] ? [NSNumber numberWithInt:[duration intValue]] : duration,
+            @"title": title
+        };
+        [mutableSongsToSerialize addObject:songDictionary];
+    }
+    successCallback(@[mutableSongsToSerialize]);
+}
+
+
 RCT_EXPORT_METHOD(getPlaylists:(NSDictionary *)params successCallback:(RCTResponseSenderBlock)successCallback) {
 
     NSArray *fields = [RCTConvert NSArray:params[@"fields"]];

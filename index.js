@@ -20,6 +20,14 @@ export default {
     });
   },
 
+  getAlbumsTracks: function (params) {
+    return new Promise((resolve) => {
+      RNiTunes.getAlbumsTracks(params || {}, (tracks) => {
+        resolve(tracks);
+      });
+    });
+  },
+
   getArtists: function (params) {
     return new Promise((resolve) => {
       RNiTunes.getArtists(params || {}, (tracks) => {
